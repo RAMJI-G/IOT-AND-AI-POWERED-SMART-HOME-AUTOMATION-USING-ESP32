@@ -1,0 +1,196 @@
+// =====================================================
+//            SMART HOME AUTOMATION SYSTEM
+//              ESP32 + BLYNK + SINRIC
+// =====================================================
+
+// =====================================================
+//                  BLYNK DETAILS
+// =====================================================
+
+#define BLYNK_TEMPLATE_ID ".............."
+#define BLYNK_TEMPLATE_NAME ".................."
+#define BLYNK_AUTH_TOKEN "......................."
+
+// =====================================================
+//                    LIBRARIES
+// =====================================================
+
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+
+#define ENABLE_DEVICE_POWERSTATE false
+#include <SinricPro.h>
+#include <SinricProSwitch.h>
+
+// =====================================================
+//                    WIFI
+// =====================================================
+
+char ssid[] = "...........";
+char pass[] = "";
+
+// =====================================================
+//                SINRIC PRO DETAILS
+// =====================================================
+
+#define APP_KEY      ".................................."
+
+#define APP_SECRET   "................................................"
+
+#define BULB1_ID     ".........................."
+
+#define BULB2_ID     "................................"
+
+#define FAN_ID       "..........................."
+
+// =====================================================
+//                  RELAY PINS
+// =====================================================
+
+#define R1   26
+#define R2   27
+#define FAN  25
+
+// =====================================================
+//                 BLYNK CONTROL
+// =====================================================
+
+// ---------------- BULB 1 ----------------
+
+BLYNK_WRITE(V0)
+{
+  int state = param.asInt();
+
+  digitalWrite(R1, state ? LOW : HIGH);
+}
+
+// ---------------- BULB 2 ----------------
+
+BLYNK_WRITE(V1)
+{
+  int state = param.asInt();
+
+  digitalWrite(R2, state ? LOW : HIGH);
+}
+
+// ---------------- FAN ----------------
+
+BLYNK_WRITE(V2)
+{
+  int state = param.asInt();
+
+  digitalWrite(FAN, state ? LOW : HIGH);
+}
+
+// =====================================================
+//              SINRIC PRO CALLBACK
+// =====================================================
+
+bool onPowerState(const String &deviceId, bool &state)
+{
+  // ---------------- BULB 1 ----------------
+
+  if (deviceId == BULB1_ID)
+  {
+    digitalWrite(R1, state ? LOW : HIGH);
+
+    Blynk.virtualWrite(V0, state);
+  }
+
+  // ---------------- BULB 2 ----------------
+
+  else if (deviceId == BULB2_ID)
+  {
+    digitalWrite(R2, state ? LOW : HIGH);
+
+    Blynk.virtualWrite(V1, state);
+  }
+
+  // ---------------- FAN ----------------
+
+  else if (deviceId == FAN_ID)
+  {
+    digitalWrite(FAN, state ? LOW : HIGH);
+
+    Blynk.virtualWrite(V2, state);
+  }
+
+  return true;
+}
+
+// =====================================================
+//                     SETUP
+// =====================================================
+
+void setup()
+{
+  Serial.begin(115200);
+
+  // ---------------- RELAY PINS ----------------
+
+  pinMode(R1, OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(FAN, OUTPUT);
+
+  // ACTIVE LOW RELAY
+  // RELAY OFF
+
+  digitalWrite(R1, HIGH);
+  digitalWrite(R2, HIGH);
+  digitalWrite(FAN, HIGH);
+
+  // ---------------- WIFI ----------------
+
+  WiFi.begin(ssid, pass);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi Connected");
+
+  // ---------------- BLYNK ----------------
+
+  Blynk.config(BLYNK_AUTH_TOKEN);
+
+  Blynk.connect();
+
+  Serial.println("Blynk Connected");
+
+  // ---------------- SINRIC PRO ----------------
+
+  SinricProSwitch &bulb1 = SinricPro[BULB1_ID];
+
+  SinricProSwitch &bulb2 = SinricPro[BULB2_ID];
+
+  SinricProSwitch &fan = SinricPro[FAN_ID];
+
+  bulb1.onPowerState(onPowerState);
+
+  bulb2.onPowerState(onPowerState);
+
+  fan.onPowerState(onPowerState);
+
+  SinricPro.begin(APP_KEY, APP_SECRET);
+
+  Serial.println("Sinric Pro Connected");
+}
+
+// =====================================================
+//                      LOOP
+// =====================================================
+
+void loop()
+{
+  // ---------------- BLYNK ----------------
+
+  Blynk.run();
+
+  // ---------------- SINRIC ----------------
+
+  SinricPro.handle();
+}

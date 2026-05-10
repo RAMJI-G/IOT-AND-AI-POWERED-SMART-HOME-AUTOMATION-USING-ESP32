@@ -1,3 +1,4 @@
+# IOT-AND-AI-POWERED-SMART-HOME-AUTOMATION-USING-ESP32
 # 🏠 AI Smart Home Automation System using ESP32
 
 An AI-integrated Smart Home Automation System built using ESP32, Blynk IoT, and Sinric Pro for intelligent wireless appliance control through mobile application and Google Assistant voice commands.

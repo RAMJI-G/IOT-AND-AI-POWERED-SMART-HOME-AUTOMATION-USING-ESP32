@@ -37,10 +37,6 @@ This project demonstrates the practical implementation of IoT, cloud communicati
 
 The ESP32 connects to WiFi and communicates with Blynk IoT and Sinric Pro cloud platforms. Users can control appliances through the Blynk mobile app or using Google Assistant voice commands. The ESP32 processes the received commands and switches connected appliances ON or OFF using relay modules.
 
-## Hardware Setup
-
-![Setup](images/project_setup.jpg)
-
 ## 🌍 Applications
 
 * Smart Home Automation
